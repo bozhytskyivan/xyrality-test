@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.covani.xyralitytest.R;
 
@@ -21,14 +20,20 @@ public class MainFragment extends Fragment {
     public static final String LOGIN = "login";
     public static final String PASSWORD = "password";
 
-    EditText mLoginTextView;
-    EditText mPasswordTextView;
-    Button mShowGamesButton;
+    private EditText mLoginTextView;
+    private EditText mPasswordTextView;
+    private Button mShowGamesButton;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setRetainInstance(true);
+    }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_main, null);
+        final View view = inflater.inflate(R.layout.fragment_main, null);
         mLoginTextView = (EditText) view.findViewById(R.id.edit_text_login);
         mPasswordTextView = (EditText) view.findViewById(R.id.edit_text_password);
         mShowGamesButton = (Button) view.findViewById(R.id.button_show_games);

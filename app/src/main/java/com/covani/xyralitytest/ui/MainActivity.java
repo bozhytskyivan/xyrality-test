@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
     public void switchFragment(Fragment fragment, boolean addToBackStack) {
         FragmentTransaction transaction = getSupportFragmentManager()
                 .beginTransaction();
-        transaction.add(R.id.fragment_container, fragment);
+        transaction.replace(R.id.fragment_container, fragment);
         if (addToBackStack) {
             transaction.addToBackStack(fragment.getClass().getSimpleName());
         }
