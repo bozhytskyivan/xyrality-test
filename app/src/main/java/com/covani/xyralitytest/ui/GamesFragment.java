@@ -1,8 +1,10 @@
 package com.covani.xyralitytest.ui;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -11,9 +13,9 @@ import android.view.ViewGroup;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.covani.xyralitytest.DataPresenter;
 import com.covani.xyralitytest.GamesListAdapter;
 import com.covani.xyralitytest.R;
-import com.covani.xyralitytest.DataPresenter;
 import com.covani.xyralitytest.model.AllAvailableWorlds;
 
 import retrofit.RetrofitError;
@@ -28,6 +30,8 @@ public class GamesFragment extends Fragment
     private ProgressBar mGamesLoadingProgressBar;
     private DataPresenter mDataPresenter;
     private GamesListAdapter mGamesListAdapter;
+
+    private boolean mIsLandscape;
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -44,7 +48,10 @@ public class GamesFragment extends Fragment
         mDataPresenter = new DataPresenter(this);
         mGamesListAdapter = new GamesListAdapter(getContext());
         mGamesRecyclerView.setAdapter(mGamesListAdapter);
-        mGamesRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mIsLandscape = getActivity().getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE;
+        mGamesRecyclerView.setLayoutManager(mIsLandscape
+                ? new GridLayoutManager(getContext(), 3)
+                : new LinearLayoutManager(getContext()));
         mDataPresenter.loadAvailavleGamesList();
         return view;
     }

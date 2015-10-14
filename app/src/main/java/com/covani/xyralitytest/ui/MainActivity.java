@@ -1,10 +1,13 @@
 package com.covani.xyralitytest.ui;
 
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 
+import com.covani.xyralitytest.DataPresenter;
 import com.covani.xyralitytest.R;
 
 /**
@@ -18,7 +21,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_main);
-        switchFragment(new MainFragment(), false);
+        if (getSupportFragmentManager().getBackStackEntryCount() == 0) {
+            switchFragment(new MainFragment(), false);
+        }
     }
 
     public void switchFragment(Fragment fragment, boolean addToBackStack) {
@@ -29,5 +34,11 @@ public class MainActivity extends AppCompatActivity {
             transaction.addToBackStack(fragment.getClass().getSimpleName());
         }
         transaction.commit();
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        DataPresenter.setCachedGamesResponse(null);
     }
 }

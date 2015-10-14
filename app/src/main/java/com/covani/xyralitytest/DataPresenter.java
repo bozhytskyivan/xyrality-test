@@ -30,36 +30,45 @@ public class DataPresenter {
     public static final String BASE_URL = "http://backend1.lordsandknights.com/XYRALITY/WebObjects/BKLoginServer.woa";
 
     private GamesListView mGamesListView;
-    private AllAvailableWorlds[] mAllAvailableWorlds;
+
+    private static GamesResponse mCachedGamesResponse;
 
     public DataPresenter(GamesListView gamesListView) {
         mGamesListView = gamesListView;
     }
 
     public void loadAvailavleGamesList() {
-        RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(BASE_URL)
-                .setConverter(new GsonConverter(new Gson())).build();
-        NetworkService networkService = restAdapter.create(NetworkService.class);
-        mGamesListView.showLoading();
-        String login = mGamesListView.getArguments().getString(MainFragment.LOGIN);
-        String password = mGamesListView.getArguments().getString(MainFragment.PASSWORD);
-        String deviceType = String.format("%s %s", Build.MODEL, Build.VERSION.RELEASE);
-        WifiManager manager = (WifiManager) ((Fragment)mGamesListView).getActivity().getSystemService(Context.WIFI_SERVICE);
-        WifiInfo info = manager.getConnectionInfo();
-        String deviceId = info.getMacAddress();
-        if (deviceId == null) {
-            deviceId = String.valueOf(System.currentTimeMillis());
+        if (mCachedGamesResponse == null) {
+            RestAdapter restAdapter = new RestAdapter.Builder()
+                    .setEndpoint(BASE_URL)
+                    .setConverter(new GsonConverter(new Gson())).build();
+            NetworkService networkService = restAdapter.create(NetworkService.class);
+            mGamesListView.showLoading();
+            String login = mGamesListView.getArguments().getString(MainFragment.LOGIN);
+            String password = mGamesListView.getArguments().getString(MainFragment.PASSWORD);
+            String deviceType = String.format("%s %s", Build.MODEL, Build.VERSION.RELEASE);
+            WifiManager manager = (WifiManager) ((Fragment) mGamesListView).getActivity().getSystemService(Context.WIFI_SERVICE);
+            WifiInfo info = manager.getConnectionInfo();
+            String deviceId = info.getMacAddress();
+            if (deviceId == null) {
+                deviceId = String.valueOf(System.currentTimeMillis());
+            }
+            networkService.getAvailableGames(login, password, deviceType, deviceId, mResponseCallback);
+        } else {
+            mResponseCallback.success(mCachedGamesResponse, null);
         }
-        networkService.getAvailableGames(login, password, deviceType, deviceId, mResponseCallback);
+    }
+
+    public static void setCachedGamesResponse(GamesResponse mCachedGamesResponse) {
+        DataPresenter.mCachedGamesResponse = mCachedGamesResponse;
     }
 
     private Callback<GamesResponse> mResponseCallback = new Callback<GamesResponse>() {
 
         @Override
         public void success(GamesResponse gamesResponse, Response response) {
-            mAllAvailableWorlds = gamesResponse.getAllAvailableWorlds();
-            mGamesListView.setData(mAllAvailableWorlds);
+            mCachedGamesResponse = gamesResponse;
+            mGamesListView.setData(mCachedGamesResponse.getAllAvailableWorlds());
             mGamesListView.hideLoading();
         }
 
