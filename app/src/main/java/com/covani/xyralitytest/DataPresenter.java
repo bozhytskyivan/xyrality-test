@@ -10,13 +10,12 @@ import android.support.v4.app.Fragment;
 import com.covani.xyralitytest.model.AllAvailableWorlds;
 import com.covani.xyralitytest.model.GamesResponse;
 import com.covani.xyralitytest.ui.MainFragment;
-import com.google.gson.Gson;
 
+import retrofit.Call;
 import retrofit.Callback;
-import retrofit.RestAdapter;
-import retrofit.RetrofitError;
-import retrofit.client.Response;
-import retrofit.converter.GsonConverter;
+import retrofit.GsonConverterFactory;
+import retrofit.Response;
+import retrofit.Retrofit;
 import retrofit.http.Field;
 import retrofit.http.FormUrlEncoded;
 import retrofit.http.Headers;
@@ -27,7 +26,7 @@ import retrofit.http.POST;
  */
 public class DataPresenter {
 
-    public static final String BASE_URL = "http://backend1.lordsandknights.com/XYRALITY/WebObjects/BKLoginServer.woa";
+    public static final String BASE_URL = "http://backend1.lordsandknights.com/XYRALITY/WebObjects/BKLoginServer.woa/";
 
     private GamesListView mGamesListView;
 
@@ -39,10 +38,12 @@ public class DataPresenter {
 
     public void loadAvailavleGamesList() {
         if (mCachedGamesResponse == null) {
-            RestAdapter restAdapter = new RestAdapter.Builder()
-                    .setEndpoint(BASE_URL)
-                    .setConverter(new GsonConverter(new Gson())).build();
-            NetworkService networkService = restAdapter.create(NetworkService.class);
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(BASE_URL)
+                    .addConverterFactory(GsonConverterFactory.create())
+                    .build();
+            final NetworkService service = retrofit.create(NetworkService.class);
+
             mGamesListView.showLoading();
             String login = mGamesListView.getArguments().getString(MainFragment.LOGIN);
             String password = mGamesListView.getArguments().getString(MainFragment.PASSWORD);
@@ -53,9 +54,11 @@ public class DataPresenter {
             if (deviceId == null) {
                 deviceId = String.valueOf(System.currentTimeMillis());
             }
-            networkService.getAvailableGames(login, password, deviceType, deviceId, mResponseCallback);
+            final Call<GamesResponse> gamesResponseCall = service.getAvailableGames(login, password, deviceType, deviceId);
+            gamesResponseCall.enqueue(mResponseCallback);
         } else {
-            mResponseCallback.success(mCachedGamesResponse, null);
+            mGamesListView.setData(mCachedGamesResponse.getAllAvailableWorlds());
+            mGamesListView.hideLoading();
         }
     }
 
@@ -64,17 +67,16 @@ public class DataPresenter {
     }
 
     private Callback<GamesResponse> mResponseCallback = new Callback<GamesResponse>() {
-
         @Override
-        public void success(GamesResponse gamesResponse, Response response) {
-            mCachedGamesResponse = gamesResponse;
+        public void onResponse(Response<GamesResponse> response, Retrofit retrofit) {
+            mCachedGamesResponse = response.body();
             mGamesListView.setData(mCachedGamesResponse.getAllAvailableWorlds());
             mGamesListView.hideLoading();
         }
 
         @Override
-        public void failure(RetrofitError error) {
-            mGamesListView.showError(error);
+        public void onFailure(Throwable t) {
+            mGamesListView.showError(t);
             mGamesListView.hideLoading();
         }
     };
@@ -87,20 +89,19 @@ public class DataPresenter {
 
         void setData(AllAvailableWorlds[] allAvailableWorlds);
 
-        void showError(RetrofitError error);
+        void showError(Throwable error);
 
         Bundle getArguments();
-
     }
 
     private interface NetworkService {
         @Headers("Accept: application/json")
         @FormUrlEncoded
-        @POST("/wa/worlds")
-        void getAvailableGames(@Field("login") String login,
-                               @Field("password") String password,
-                               @Field("deviceType") String deviceType,
-                               @Field("deviceId") String deviceId, Callback<GamesResponse> callback);
+        @POST("wa/worlds")
+        Call<GamesResponse> getAvailableGames(@Field("login") String login,
+                                              @Field("password") String password,
+                                              @Field("deviceType") String deviceType,
+                                              @Field("deviceId") String deviceId);
 
     }
 }

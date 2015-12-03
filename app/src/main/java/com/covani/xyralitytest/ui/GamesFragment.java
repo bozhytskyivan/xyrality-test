@@ -18,8 +18,6 @@ import com.covani.xyralitytest.GamesListAdapter;
 import com.covani.xyralitytest.R;
 import com.covani.xyralitytest.model.AllAvailableWorlds;
 
-import retrofit.RetrofitError;
-
 /**
  * Created by Covani on 14.10.2015.
  */
@@ -72,7 +70,7 @@ public class GamesFragment extends Fragment
     }
 
     @Override
-    public void showError(RetrofitError error) {
+    public void showError(Throwable error) {
         Toast.makeText(getContext(), error.getMessage(), Toast.LENGTH_LONG).show();
         getActivity().onBackPressed();
     }
