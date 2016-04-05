@@ -1,3 +1,11 @@
+/gradle.properties
+/gradlew.bat
+/app/app.iml
+/gradlew
+/XyralityTest.iml
+/xyrality-test.iml
+/.idea
+/gradle
 .gradle
 /local.properties
 /.idea/workspace.xml
